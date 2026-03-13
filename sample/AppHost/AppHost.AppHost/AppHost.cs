@@ -1,4 +1,5 @@
-using Fnandop.Temporal.Hosting;
+﻿using Nando.Aspire.Temporal;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var postgres = builder.AddPostgres("postgres")
@@ -8,7 +9,7 @@ var postgres = builder.AddPostgres("postgres")
     .WithHostPort(5432)
     .WithPgAdmin();
 
-var temporal = builder.AddTemporal("temporal")
+var _ = builder.AddTemporal("temporal")
                       .WithPostgres(postgres)
                       .WithtTemporalAdminTools()
                       .WithtTemporalUi();

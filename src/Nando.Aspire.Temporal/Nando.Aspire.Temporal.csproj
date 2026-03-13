@@ -4,6 +4,12 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <PackageId>Nando.Aspire.Temporal</PackageId>
+    <PackageTags>aspire integration hosting temporal</PackageTags>
+    <Description>Temporal Server support for Aspire.</Description>
+    <Version>1.0.0-preview.1</Version>
+    <Authors>Fnandop</Authors>
   </PropertyGroup>
 
   <ItemGroup>
