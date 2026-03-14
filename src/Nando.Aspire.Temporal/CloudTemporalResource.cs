@@ -6,5 +6,5 @@ public sealed class CloudTemporalResource(string name) : Resource(name), ITempor
 {
     public required ParameterResource ServerEndpointParameter { get; init; }
     public required ParameterResource DomainParameter { get; init; }
-
+    public required ParameterResource ApiKeyParameter { get; init; }
 }
