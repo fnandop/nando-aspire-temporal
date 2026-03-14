@@ -1,7 +1,5 @@
 ﻿using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
-using Humanizer.Localisation;
-using MessagePack;
 
 namespace Nando.Aspire.Temporal;
 
@@ -17,10 +15,11 @@ public static class TemporalResourceBuilderExtensions
     /// <param name="name">The name of the Temporal resource.</param>
     /// <param name="grpcPort">The gRPC port for the Temporal server (optional).</param>
     /// <returns>An <see cref="IResourceBuilder{TemporalResource}"/> for further configuration.</returns>
-    public static IResourceBuilder<TemporalResource> AddTemporal(this IDistributedApplicationBuilder builder, string name, int? grpcPort = null)
+    public static IResourceBuilder<ContainerTemporalResource> AddTemporal(this IDistributedApplicationBuilder builder, string name, int? grpcPort = null, string? domain = null)
     {
         string temporalVersion = builder.Configuration["TEMPORAL_VERSION"] ?? "latest";
-        var resource = new TemporalResource(name);
+        var resource = new ContainerTemporalResource(name);
+        resource.Domain ??= domain;
 
         var temporal = builder.AddResource(resource)
             .WithImage("temporalio/auto-setup", temporalVersion)
@@ -32,7 +31,7 @@ public static class TemporalResourceBuilderExtensions
                 isReadOnly: false
             )
             .WithEndpoint(
-                name: TemporalResource.TemporalServerGRPCEndpointName,
+                name: ContainerTemporalResource.TemporalServerGRPCEndpointName,
                 port: grpcPort ?? 7233,
                 targetPort: 7233,
                 scheme: "grpc"
@@ -47,7 +46,7 @@ public static class TemporalResourceBuilderExtensions
     /// <param name="builder">The Temporal resource builder.</param>
     /// <param name="postgres">The PostgreSQL resource builder.</param>
     /// <returns>An <see cref="IResourceBuilder{TemporalResource}"/> for further configuration.</returns>
-    public static IResourceBuilder<TemporalResource> WithPostgres(this IResourceBuilder<TemporalResource> builder,
+    public static IResourceBuilder<ContainerTemporalResource> WithPostgres(this IResourceBuilder<ContainerTemporalResource> builder,
                                                                    IResourceBuilder<PostgresServerResource> postgres)
     {
         var postgresDatabase = postgres.Resource;
@@ -68,7 +67,7 @@ public static class TemporalResourceBuilderExtensions
     /// </summary>
     /// <param name="temporal">The Temporal resource builder.</param>
     /// <returns>An <see cref="IResourceBuilder{TemporalResource}"/> for further configuration.</returns>
-    public static IResourceBuilder<TemporalResource> WithtTemporalAdminTools(this IResourceBuilder<TemporalResource> temporal)
+    public static IResourceBuilder<ContainerTemporalResource> WithtTemporalAdminTools(this IResourceBuilder<ContainerTemporalResource> temporal)
     {
         var builder = temporal.ApplicationBuilder;
         string temporalAdminToolsVersion = builder.Configuration["TEMPORAL_ADMINTOOLS_VERSION"] ?? "latest";
@@ -89,7 +88,7 @@ public static class TemporalResourceBuilderExtensions
     /// <param name="temporal">The Temporal resource builder.</param>
     /// <param name="uiPort">The port for the Temporal UI (optional).</param>
     /// <returns>An <see cref="IResourceBuilder{TemporalResource}"/> for further configuration.</returns>
-    public static IResourceBuilder<TemporalResource> WithtTemporalUi(this IResourceBuilder<TemporalResource> temporal, int? uiPort = null)
+    public static IResourceBuilder<ContainerTemporalResource> WithtTemporalUi(this IResourceBuilder<ContainerTemporalResource> temporal, int? uiPort = null)
     {
         var builder = temporal.ApplicationBuilder;
         string temporalUiVersion = builder.Configuration["TEMPORAL_UI_VERSION"] ?? "latest";
@@ -101,7 +100,7 @@ public static class TemporalResourceBuilderExtensions
             .WithEnvironment("TEMPORAL_ADDRESS", temporal.Resource.TemporalServerGRPCEndpointExpression)
             .WithEnvironment("TEMPORAL_CORS_ORIGINS", "http://localhost:3000")
             .WithEndpoint(
-                name: TemporalResource.TemporalServerUIEndpointName,
+                name: ContainerTemporalResource.TemporalServerUIEndpointName,
                 port: uiPort ?? 8233,
                 targetPort: 8080,
                 scheme: "http"
@@ -118,10 +117,11 @@ public static class TemporalResourceBuilderExtensions
     /// <param name="grpcPort">The gRPC port for the Temporal server (optional).</param>
     /// <param name="uiPort">The port for the Temporal UI (optional).</param>
     /// <returns>An <see cref="IResourceBuilder{TemporalResource}"/> for further configuration.</returns>
-    public static IResourceBuilder<TemporalResource> AddTemporalDevServer(this IDistributedApplicationBuilder builder, string name, int? grpcPort = null, int? uiPort = null)
+    public static IResourceBuilder<ContainerTemporalResource> AddTemporalDevServer(this IDistributedApplicationBuilder builder, string name, int? grpcPort = null, int? uiPort = null, string? domain = null)
     {
         string temporalVersion = builder.Configuration["TEMPORAL_VERSION"] ?? "latest";
-        var resource = new TemporalResource(name);
+        var resource = new ContainerTemporalResource(name);
+        resource.Domain ??= domain;
 
         return builder.AddResource(resource)
             .WithImage("temporalio/temporal")
@@ -129,13 +129,13 @@ public static class TemporalResourceBuilderExtensions
             .WithImageTag(temporalVersion)
             .WithArgs("server", "start-dev", "--ip", "0.0.0.0")
             .WithEndpoint(
-                name: TemporalResource.TemporalServerGRPCEndpointName,
+                name: ContainerTemporalResource.TemporalServerGRPCEndpointName,
                 port: grpcPort ?? 7233,
                 targetPort: 7233,
                 scheme: "grpc"
             )
             .WithEndpoint(
-                name: TemporalResource.TemporalServerUIEndpointName,
+                name: ContainerTemporalResource.TemporalServerUIEndpointName,
                 port: uiPort ?? 8233,
                 targetPort: 8233,
                 scheme: "http"
@@ -143,9 +143,9 @@ public static class TemporalResourceBuilderExtensions
     }
 
 
-    public static IResourceBuilder<TDestination> WithReference<TDestination>(
+    private static IResourceBuilder<TDestination> WithReference<TDestination>(
         this IResourceBuilder<TDestination> builder,
-        IResourceBuilder<TemporalResource> temporal,
+        IResourceBuilder<ContainerTemporalResource> temporal,
         string? name = null)
         where TDestination : IResourceWithEnvironment
     {
@@ -156,7 +156,7 @@ public static class TemporalResourceBuilderExtensions
         {
             context.EnvironmentVariables[$"TEMPORAL_ADDRESS"] =
                 temporal.Resource.TemporalServerGRPCEndpointExpression;
-            context.EnvironmentVariables[$"TEMPORAL_NAMESPACE"] = "default";
+            context.EnvironmentVariables[$"TEMPORAL_NAMESPACE"] = temporal.Resource.Domain;
 
             return Task.CompletedTask;
         }));
@@ -164,6 +164,86 @@ public static class TemporalResourceBuilderExtensions
         return builder;
     }
 
+    public static IResourceBuilder<TDestination> WithReference<TDestination>(
+this IResourceBuilder<TDestination> builder,
+IResourceBuilder<ITemporalResource> temporal,
+string? name = null)
+where TDestination : IResourceWithEnvironment
+    {
+        if (temporal is IResourceBuilder<ContainerTemporalResource> containerTemporal)
+            builder.WithReference(containerTemporal, name);
+
+        if (temporal is IResourceBuilder<CloudTemporalResource> cloudTemporal)
+            builder.WithReference(cloudTemporal, name);
+        return builder;
+    }
+
+
+    public static IResourceBuilder<CloudTemporalResource> AddTemporalCloud(this IDistributedApplicationBuilder builder, string name, string temporalServerGRPCEndpoint, string domain)
+    {
+
+        var resource = new CloudTemporalResource(name) { TemporalServerGRPCEndpoint = temporalServerGRPCEndpoint, Domain = domain };
+        var resourceBuilder = builder.AddResource(resource)
+             .WithInitialState(new CustomResourceSnapshot
+             {
+                 ResourceType = "TemporalCloudService",
+                 State = KnownResourceStates.Waiting,
+                 Properties = []
+             })
+             .ExcludeFromManifest();
+
+        // Subscribe to the InitializeResourceEvent to finish setting up the resource
+        builder.Eventing.Subscribe<InitializeResourceEvent>(resource, static async (e, ct) =>
+        {
+            var resource = e.Resource as CloudTemporalResource;
+            if (resource is not null)
+            {
+
+                await e.Eventing.PublishAsync(new BeforeResourceStartedEvent(e.Resource, e.Services), ct).ConfigureAwait(false);
+
+                await e.Notifications.PublishUpdateAsync(resource, snapshot => snapshot with
+                {
+                    Urls = [new UrlSnapshot("Temporal Cloud", resource.TemporalServerGRPCEndpoint, false)],
+
+                    //// Add the URL if it came from a parameter as non-static URLs must be published by the owning custom resource
+                    //Urls = AddUrlIfNotPresent(snapshot.Urls, uri),
+                    // Required in order for health checks to work
+                    State = KnownResourceStates.Running
+                }).ConfigureAwait(false);
+
+
+            }
+        });
+
+        return resourceBuilder;
+
+    }
+
+
+
+
+
+
+    private static IResourceBuilder<TDestination> WithReference<TDestination>(
+    this IResourceBuilder<TDestination> builder,
+    IResourceBuilder<CloudTemporalResource> temporal,
+    string? name = null)
+    where TDestination : IResourceWithEnvironment
+    {
+        var resource = temporal.Resource;
+        name ??= resource.Name;
+
+        builder.WithAnnotation(new EnvironmentCallbackAnnotation(context =>
+        {
+            context.EnvironmentVariables[$"TEMPORAL_ADDRESS"] =
+                temporal.Resource.TemporalServerGRPCEndpoint;
+            context.EnvironmentVariables[$"TEMPORAL_NAMESPACE"] = temporal.Resource.Domain;
+
+            return Task.CompletedTask;
+        }));
+
+        return builder;
+    }
 
 
 }

@@ -1,4 +1,5 @@
 ﻿using Nando.Aspire.Temporal;
+using System.Runtime.InteropServices;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -15,13 +16,20 @@ var postgres = builder.AddPostgres("postgres")
 //                      .WithPostgres(postgres)
 //                      .WithtTemporalAdminTools()
 //                      .WithtTemporalUi();
+//var worker = builder.AddProject<Projects.SampleWorker>("sample-worker").WithReference(temporal).WaitFor(temporal);
+//var sampleApi = builder.AddProject<Projects.SampleApi>("sampl-api").WithReference(temporal).WaitFor(temporal);
 
 
-var temporal = builder.AddTemporalDevServer("temporal-dev");
+var temporalDev = builder.AddTemporalDevServer("temporal-dev");
+//var worker = builder.AddProject<Projects.SampleWorker>("sample-worker").WithReference(temporalDev).WaitFor(temporalDev);
+//var sampleApi = builder.AddProject<Projects.SampleApi>("sampl-api").WithReference(temporalDev).WaitFor(temporalDev);
 
 
 
-var worker = builder.AddProject<Projects.SampleWorker>("sample-worker").WithReference(temporal).WaitFor(temporal);
-var sampleApi = builder.AddProject<Projects.SampleApi>("sampl-api").WithReference(temporal).WaitFor(temporal);
+var temporalCloud = builder.AddTemporalCloud("temporal-cloud", "localhost:7233");
+var worker = builder.AddProject<Projects.SampleWorker>("sample-worker").WithReference(temporalCloud);//.WaitFor(temporalCloud);
+var sampleApi = builder.AddProject<Projects.SampleApi>("sampl-api").WithReference(temporalCloud).WithReference();//.WaitFor(temporalCloud);
+
+
 
 builder.Build().Run();
