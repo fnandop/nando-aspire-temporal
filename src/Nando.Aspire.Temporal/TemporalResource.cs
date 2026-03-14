@@ -2,32 +2,20 @@
 
 namespace Nando.Aspire.Temporal;
 
-public sealed class TemporalResource(string name) : ContainerResource(name), IResourceWithConnectionString
+public sealed class TemporalResource(string name) : ContainerResource(name), IResource
 {
 
     internal const string TemporalServerGRPCEndpointName = "temporal-server";
     internal const string TemporalServerUIEndpointName = "temporal-server-ui";
 
-    public EndpointReference TemporalServerEndpoint =>
+    public EndpointReference TemporalServerEndpointGRPC =>
         field ??= new(this, TemporalServerGRPCEndpointName);
 
     public EndpointReference TemporalServerUiEndpoint =>
         field ??= new(this, TemporalServerUIEndpointName);
 
-    public ReferenceExpression ConnectionStringExpression =>
-    ReferenceExpression.Create(
-        $"{TemporalServerEndpoint.Property(EndpointProperty.HostAndPort)}"
-    );
 
-    /// <summary>
-    /// Gets the connection string for the Temporal Server
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public ValueTask<string?> GetConnectionStringAsync(CancellationToken cancellationToken = default)
-    {
-        return this.TryGetLastAnnotation<ConnectionStringRedirectAnnotation>(out var connectionStringAnnotation)
-            ? connectionStringAnnotation.Resource.GetConnectionStringAsync(cancellationToken)
-            : ConnectionStringExpression.GetValueAsync(cancellationToken);
-    }
+    public ReferenceExpression TemporalServerGRPCEndpointExpression => ReferenceExpression.Create($"{TemporalServerEndpointGRPC.Property(EndpointProperty.HostAndPort)}");
+    public ReferenceExpression TemporalServerUiEndpointExpression => ReferenceExpression.Create($"{TemporalServerUiEndpoint.Property(EndpointProperty.HostAndPort)}");
+
 }

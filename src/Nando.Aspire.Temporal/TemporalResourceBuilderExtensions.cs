@@ -1,5 +1,7 @@
 ﻿using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
+using Humanizer.Localisation;
+using MessagePack;
 
 namespace Nando.Aspire.Temporal;
 
@@ -75,8 +77,8 @@ public static class TemporalResourceBuilderExtensions
             .AddContainer("temporal-admin-tools", "temporalio/admin-tools", temporalAdminToolsVersion)
             .WithContainerName("temporal-admin-tools")
             .WithReference(temporal)
-            .WithEnvironment("TEMPORAL_ADDRESS", temporal.Resource.ConnectionStringExpression)
-            .WithEnvironment("TEMPORAL_CLI_ADDRESS", temporal.Resource.ConnectionStringExpression);
+            .WithEnvironment("TEMPORAL_ADDRESS", temporal.Resource.TemporalServerGRPCEndpointExpression)
+            .WithEnvironment("TEMPORAL_CLI_ADDRESS", temporal.Resource.TemporalServerGRPCEndpointExpression);
 
         return temporal;
     }
@@ -96,7 +98,7 @@ public static class TemporalResourceBuilderExtensions
             .AddContainer("temporal-ui", "temporalio/ui", temporalUiVersion)
             .WithContainerName("temporal-ui")
             .WithReference(temporal)
-            .WithEnvironment("TEMPORAL_ADDRESS", temporal.Resource.ConnectionStringExpression)
+            .WithEnvironment("TEMPORAL_ADDRESS", temporal.Resource.TemporalServerGRPCEndpointExpression)
             .WithEnvironment("TEMPORAL_CORS_ORIGINS", "http://localhost:3000")
             .WithEndpoint(
                 name: TemporalResource.TemporalServerUIEndpointName,
@@ -139,4 +141,29 @@ public static class TemporalResourceBuilderExtensions
                 scheme: "http"
             );
     }
+
+
+    public static IResourceBuilder<TDestination> WithReference<TDestination>(
+        this IResourceBuilder<TDestination> builder,
+        IResourceBuilder<TemporalResource> temporal,
+        string? name = null)
+        where TDestination : IResourceWithEnvironment
+    {
+        var resource = temporal.Resource;
+        name ??= resource.Name;
+
+        builder.WithAnnotation(new EnvironmentCallbackAnnotation(context =>
+        {
+            context.EnvironmentVariables[$"TEMPORAL_ADDRESS"] =
+                temporal.Resource.TemporalServerGRPCEndpointExpression;
+            context.EnvironmentVariables[$"TEMPORAL_NAMESPACE"] = "default";
+
+            return Task.CompletedTask;
+        }));
+
+        return builder;
+    }
+
+
+
 }

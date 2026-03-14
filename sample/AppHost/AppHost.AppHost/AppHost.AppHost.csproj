@@ -10,9 +10,15 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="9.5.0" />
+    <!--<PackageReference Include="Nando.Aspire.Temporal" Version="1.0.0-preview.1" />-->
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Nando.Aspire.Temporal\Nando.Aspire.Temporal.csproj"  IsAspireProjectResource="false" />
+    <ProjectReference Include="..\..\..\SampleWorker\SampleWorker.csproj" />
+    <ProjectReference Include="..\..\Api\SampleApi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Nando.Aspire.Temporal\Nando.Aspire.Temporal.csproj" IsAspireProjectResource="false" />
   </ItemGroup>
 </Project>
