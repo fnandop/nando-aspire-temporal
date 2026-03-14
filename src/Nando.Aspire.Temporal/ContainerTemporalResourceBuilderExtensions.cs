@@ -156,94 +156,11 @@ public static class ContainerTemporalResourceBuilderExtensions
         {
             context.EnvironmentVariables[$"TEMPORAL_ADDRESS"] =
                 temporal.Resource.TemporalServerGRPCEndpointExpression;
-            context.EnvironmentVariables[$"TEMPORAL_NAMESPACE"] = temporal.Resource.Domain;
+            context.EnvironmentVariables[$"TEMPORAL_NAMESPACE"] = temporal.Resource.Domain!;
 
             return Task.CompletedTask;
         }));
 
         return builder;
     }
-
-    public static IResourceBuilder<TDestination> WithReference<TDestination>(
-this IResourceBuilder<TDestination> builder,
-IResourceBuilder<ITemporalResource> temporal,
-string? name = null)
-where TDestination : IResourceWithEnvironment
-    {
-        if (temporal is IResourceBuilder<ContainerTemporalResource> containerTemporal)
-            builder.WithReference(containerTemporal, name);
-
-        if (temporal is IResourceBuilder<CloudTemporalResource> cloudTemporal)
-            builder.WithReference(cloudTemporal, name);
-        return builder;
-    }
-
-
-    public static IResourceBuilder<CloudTemporalResource> AddTemporalCloud(this IDistributedApplicationBuilder builder, string name, string temporalServerGRPCEndpoint, string domain)
-    {
-
-        var resource = new CloudTemporalResource(name) { TemporalServerGRPCEndpoint = temporalServerGRPCEndpoint, Domain = domain };
-        var resourceBuilder = builder.AddResource(resource)
-             .WithInitialState(new CustomResourceSnapshot
-             {
-                 ResourceType = "TemporalCloudService",
-                 State = KnownResourceStates.Waiting,
-                 Properties = []
-             })
-             .ExcludeFromManifest();
-
-        // Subscribe to the InitializeResourceEvent to finish setting up the resource
-        builder.Eventing.Subscribe<InitializeResourceEvent>(resource, static async (e, ct) =>
-        {
-            var resource = e.Resource as CloudTemporalResource;
-            if (resource is not null)
-            {
-
-                await e.Eventing.PublishAsync(new BeforeResourceStartedEvent(e.Resource, e.Services), ct).ConfigureAwait(false);
-
-                await e.Notifications.PublishUpdateAsync(resource, snapshot => snapshot with
-                {
-                    Urls = [new UrlSnapshot("Temporal Cloud", resource.TemporalServerGRPCEndpoint, false)],
-
-                    //// Add the URL if it came from a parameter as non-static URLs must be published by the owning custom resource
-                    //Urls = AddUrlIfNotPresent(snapshot.Urls, uri),
-                    // Required in order for health checks to work
-                    State = KnownResourceStates.Running
-                }).ConfigureAwait(false);
-
-
-            }
-        });
-
-        return resourceBuilder;
-
-    }
-
-
-
-
-
-
-    private static IResourceBuilder<TDestination> WithReference<TDestination>(
-    this IResourceBuilder<TDestination> builder,
-    IResourceBuilder<CloudTemporalResource> temporal,
-    string? name = null)
-    where TDestination : IResourceWithEnvironment
-    {
-        var resource = temporal.Resource;
-        name ??= resource.Name;
-
-        builder.WithAnnotation(new EnvironmentCallbackAnnotation(context =>
-        {
-            context.EnvironmentVariables[$"TEMPORAL_ADDRESS"] =
-                temporal.Resource.TemporalServerGRPCEndpoint;
-            context.EnvironmentVariables[$"TEMPORAL_NAMESPACE"] = temporal.Resource.Domain;
-
-            return Task.CompletedTask;
-        }));
-
-        return builder;
-    }
-
-
 }
