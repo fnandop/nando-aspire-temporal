@@ -24,11 +24,12 @@ var temporalDev = builder.AddTemporalDevServer("temporal-dev");
 //var worker = builder.AddProject<Projects.SampleWorker>("sample-worker").WithReference(temporalDev).WaitFor(temporalDev);
 //var sampleApi = builder.AddProject<Projects.SampleApi>("sampl-api").WithReference(temporalDev).WaitFor(temporalDev);
 
+var serverEndpointParameter = builder.AddParameter("serverEndpoint", "localhost:7233");
+var domainParameter = builder.AddParameter("domain", "default");
 
-
-var temporalCloud = builder.AddTemporalCloud("temporal-cloud", "localhost:7233");
+var temporalCloud = builder.AddTemporalCloud("temporal-cloud", serverEndpointParameter, domainParameter);
 var worker = builder.AddProject<Projects.SampleWorker>("sample-worker").WithReference(temporalCloud);//.WaitFor(temporalCloud);
-var sampleApi = builder.AddProject<Projects.SampleApi>("sampl-api").WithReference(temporalCloud).WithReference();//.WaitFor(temporalCloud);
+var sampleApi = builder.AddProject<Projects.SampleApi>("sampl-api").WithReference(temporalCloud);//.WaitFor(temporalCloud);
 
 
 

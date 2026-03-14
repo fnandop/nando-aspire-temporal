@@ -6,7 +6,7 @@ namespace Nando.Aspire.Temporal;
 /// <summary>
 /// Provides extension methods for configuring Temporal resources in a distributed application.
 /// </summary>
-public static class TemporalResourceBuilderExtensions
+public static class ContainerTemporalResourceBuilderExtensions
 {
     /// <summary>
     /// Adds a Temporal resource to the distributed application builder.
