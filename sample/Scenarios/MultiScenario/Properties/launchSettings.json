@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "DevServer": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "Development",
+        "Scenario": "DevServer",
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21250",
+        "ASPIRE_DASHBOARD_MCP_ENDPOINT_URL": "https://localhost:23267",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22223"
+      }
+      }
+    },
+    "DevServerCustomPorts": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "Development",
+        "Scenario": "DevServerCustomPorts",
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21250",
+        "ASPIRE_DASHBOARD_MCP_ENDPOINT_URL": "https://localhost:23267",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22223"
+      }
+    },
+    "FullContainerStack": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "Development",
+        "Scenario": "FullContainerStack",
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21250",
+        "ASPIRE_DASHBOARD_MCP_ENDPOINT_URL": "https://localhost:23267",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22223"
+      }
+    },
+    "TemporalCloud": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "Development",
+        "Scenario": "TemporalCloud",
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21250",
+        "ASPIRE_DASHBOARD_MCP_ENDPOINT_URL": "https://localhost:23267",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22223"
+      }
+    },
+    "MinimalWorkerOnly": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "Development",
+        "Scenario": "MinimalWorkerOnly",
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21250",
+        "ASPIRE_DASHBOARD_MCP_ENDPOINT_URL": "https://localhost:23267",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22223"
+      }
+    }
+  }
+}
