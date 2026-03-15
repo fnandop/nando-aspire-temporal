@@ -6,10 +6,15 @@
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
     <PackageId>Nando.Aspire.Temporal</PackageId>
-    <PackageTags>aspire integration hosting temporal</PackageTags>
-    <Description>Temporal Server support for Aspire.</Description>
+    <PackageTags>aspire;integration;hosting;temporal;workflow;orchestration;dotnet</PackageTags>
+    <Description>Temporal Server support for .NET Aspire. Add Temporal as a container resource for local development or connect to Temporal Cloud for production workloads.</Description>
     <Version>1.0.0-preview.1</Version>
     <Authors>Fnandop</Authors>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/fnandop/nando-aspire-temporal</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/fnandop/nando-aspire-temporal</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
     <None Update="dynamicconfig\development-sql.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
