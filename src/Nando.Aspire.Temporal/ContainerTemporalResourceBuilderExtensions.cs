@@ -63,6 +63,28 @@ public static class ContainerTemporalResourceBuilderExtensions
     }
 
     /// <summary>
+    /// Configures the Temporal resource to use a MySQL database.
+    /// </summary>
+    /// <param name="builder">The Temporal resource builder.</param>
+    /// <param name="mysql">The MySQL resource builder.</param>
+    /// <returns>An <see cref="IResourceBuilder{TemporalResource}"/> for further configuration.</returns>
+    public static IResourceBuilder<ContainerTemporalResource> WithMySql(this IResourceBuilder<ContainerTemporalResource> builder,
+                                                                IResourceBuilder<MySqlServerResource> mysql)
+    {
+        var mysqlDatabase = mysql.Resource;
+        _ = builder
+            .WithReference(mysql)
+            .WaitFor(mysql)
+            .WithEnvironment("DB", "mysql8")
+            .WithEnvironment("DB_PORT", mysqlDatabase.PrimaryEndpoint.TargetPort.ToString())
+            .WithEnvironment("MYSQL_USER", "root")
+            .WithEnvironment("MYSQL_PWD", mysqlDatabase.PasswordParameter)
+            .WithEnvironment("MYSQL_SEEDS", mysqlDatabase.Name);
+
+        return builder;
+    }
+
+    /// <summary>
     /// Adds Temporal Admin Tools to the application.
     /// </summary>
     /// <param name="temporal">The Temporal resource builder.</param>
