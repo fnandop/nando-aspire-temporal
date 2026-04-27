@@ -1,0 +1,24 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.1.2">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>scenario-mysqlcontainerstack-001</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.MySql" Version="9.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\SampleWorker\SampleWorker.csproj" />
+    <ProjectReference Include="..\..\Api\SampleApi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Nando.Aspire.Temporal\Nando.Aspire.Temporal.csproj" IsAspireProjectResource="false" />
+  </ItemGroup>
+
+</Project>
