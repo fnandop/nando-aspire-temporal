@@ -3,41 +3,47 @@ using Aspire.Hosting.ApplicationModel;
 
 namespace Nando.Aspire.Temporal;
 
-/// <summary>
-/// Provides extension methods for configuring Temporal resources in a distributed application.
-/// </summary>
 public static class ContainerTemporalResourceBuilderExtensions
 {
-    /// <summary>
-    /// Adds a Temporal resource to the distributed application builder.
-    /// </summary>
-    /// <param name="builder">The distributed application builder.</param>
-    /// <param name="name">The name of the Temporal resource.</param>
-    /// <param name="grpcPort">The gRPC port for the Temporal server (optional).</param>
-    /// <returns>An <see cref="IResourceBuilder{TemporalResource}"/> for further configuration.</returns>
-    public static IResourceBuilder<ContainerTemporalResource> AddTemporal(this IDistributedApplicationBuilder builder, string name, int? grpcPort = null, string? domain = null)
+public static IResourceBuilder<ContainerTemporalResource> AddTemporal(this IDistributedApplicationBuilder builder, string name, int? grpcPort = null, string? domain = null)
     {
         string temporalVersion = builder.Configuration["TEMPORAL_VERSION"] ?? "latest";
         var resource = new ContainerTemporalResource(name);
         resource.Domain ??= domain;
 
-        var temporal = builder.AddResource(resource)
+        return AddTemporalCore(builder.AddResource(resource), temporalVersion, grpcPort);
+    }
+
+    public static IResourceBuilder<ContainerTemporalResource> AddTemporal(this IDistributedApplicationBuilder builder, string name, string dynamicConfig, int? grpcPort = null, string? domain = null)
+    {
+        string temporalVersion = builder.Configuration["TEMPORAL_VERSION"] ?? "latest";
+        var resource = new ContainerTemporalResource(name);
+        resource.Domain ??= domain;
+
+        return AddTemporalCore(builder.AddResource(resource), temporalVersion, grpcPort, dynamicConfig);
+    }
+
+    private static IResourceBuilder<ContainerTemporalResource> AddTemporalCore(IResourceBuilder<ContainerTemporalResource> builder, string temporalVersion, int? grpcPort = null, string? dynamicConfig = null)
+    {
+        dynamicConfig ??= ContainerTemporalResource.DefaultDynamicConfig;
+
+        return builder
             .WithImage("temporalio/auto-setup", temporalVersion)
             .WithContainerName("temporal")
             .WithEnvironment("DYNAMIC_CONFIG_FILE_PATH", "config/dynamicconfig/development-sql.yaml")
-            .WithBindMount(
-                source: "./dynamicconfig",
-                target: "/etc/temporal/config/dynamicconfig",
-                isReadOnly: false
-            )
+            .WithContainerFiles("/etc/temporal/config/dynamicconfig", [
+                new ContainerFile
+                {
+                    Name = "development-sql.yaml",
+                    Contents = dynamicConfig
+                }
+            ])
             .WithEndpoint(
                 name: ContainerTemporalResource.TemporalServerGRPCEndpointName,
                 port: grpcPort ?? 7233,
                 targetPort: 7233,
                 scheme: "grpc"
             );
-
-        return temporal;
     }
 
     /// <summary>
