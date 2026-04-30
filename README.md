@@ -12,6 +12,7 @@
 - Add Temporal as an Aspire container resource via `AddTemporal(...)`
 - Lightweight dev server via `AddTemporalDevServer(...)`
 - Optionally configure Temporal to use an Aspire Postgres resource via `WithPostgres(...)`
+- Optionally configure Temporal to use an Aspire MySQL resource via `WithMySql(...)`
 - Optional companion containers:
   - Temporal Admin Tools via `WithtTemporalAdminTools()`
   - Temporal UI via `WithtTemporalUi()`
@@ -82,6 +83,29 @@ builder.AddProject<Projects.MyWorker>("worker")
 builder.Build().Run();
 ```
 
+### Temporal with MySQL + Admin Tools + UI
+
+```csharp
+using Nando.Aspire.Temporal;
+
+var builder = DistributedApplication.CreateBuilder(args);
+
+var mysql = builder.AddMySql("mysql")
+    .WithLifetime(ContainerLifetime.Persistent)
+    .WithHostPort(3306);
+
+var temporal = builder.AddTemporal("temporal")
+    .WithMySql(mysql)
+    .WithtTemporalAdminTools()
+    .WithtTemporalUi();
+
+builder.AddProject<Projects.MyWorker>("worker")
+    .WithReference(temporal)
+    .WaitFor(temporal);
+
+builder.Build().Run();
+```
+
 ### Temporal Cloud
 
 ```csharp
@@ -139,6 +163,7 @@ Configure the parameters in `appsettings.json`:
 | `AddTemporal(builder, name, grpcPort?, domain?)` | Adds Temporal using `temporalio/auto-setup` image |
 | `AddTemporalDevServer(builder, name, grpcPort?, uiPort?, domain?)` | Adds lightweight dev server using `temporalio/temporal` |
 | `WithPostgres(temporal, postgres)` | Configures Temporal to use a Postgres resource |
+| `WithMySql(temporal, mysql)` | Configures Temporal to use a MySQL resource |
 | `WithtTemporalAdminTools(temporal)` | Adds the Temporal Admin Tools container |
 | `WithtTemporalUi(temporal, uiPort?)` | Adds the Temporal UI container |
 
