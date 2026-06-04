@@ -190,7 +190,3 @@ dotnet test
 ## Release
 
 This repo includes a GitHub Actions workflow to publish to NuGet on tagged releases (`v*.*.*`). See `.github/workflows/publish-nuget.yml`.
-
-## License
-
-See `LICENSE` (if present in this repository).
